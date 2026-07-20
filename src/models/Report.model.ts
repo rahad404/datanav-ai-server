@@ -1,7 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export type ReportCategory = "sales" | "finance" | "marketing" | "operations" | "other";
-export type ReportStatus = "uploaded" | "processing" | "analyzed" | "failed";
+export type ReportStatus = "uploaded" | "processing" | "done" | "failed";
 
 export interface IReport extends Document {
    title: string;
@@ -9,12 +9,12 @@ export interface IReport extends Document {
    category: ReportCategory;
    status: ReportStatus;
    isPublic: boolean;
-   owner: Types.ObjectId;
+   owner: string;
    file: {
       originalName: string;
-      storedPath: string;
+      path: string;
       mimeType: string;
-      sizeBytes: number;
+      size: number;
    };
    rowCount?: number;
    views: number;
@@ -33,16 +33,16 @@ const reportSchema = new Schema<IReport>(
       },
       status: {
          type: String,
-         enum: ["uploaded", "processing", "analyzed", "failed"],
+         enum: ["uploaded", "processing", "done", "failed"],
          default: "uploaded",
       },
       isPublic: { type: Boolean, default: false },
-      owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
+      owner: { type: String, required: true },
       file: {
          originalName: { type: String, required: true },
-         storedPath: { type: String, required: true },
+         path: { type: String, required: true },
          mimeType: { type: String, required: true },
-         sizeBytes: { type: Number, required: true },
+         size: { type: Number, required: true },
       },
       rowCount: Number,
       views: { type: Number, default: 0 },

@@ -13,7 +13,8 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
    if (err instanceof ApiError) {
       return res.status(err.status).json({ message: err.message });
    }
-   return res.status(500).json({ message: "Internal server error" });
+   const message = err instanceof Error ? err.message : "Internal server error";
+   return res.status(500).json({ message });
 }
 
 export function notFound(_req: Request, res: Response) {

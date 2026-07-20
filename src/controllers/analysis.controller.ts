@@ -15,7 +15,7 @@ async function runAnalysisJob(reportId: string, depth: "quick" | "deep") {
    await report.save();
 
    try {
-      const dataset = parseDataFile(report.file.storedPath);
+      const dataset = parseDataFile(report.file.path);
       const result = await analyzeDataset(dataset, depth, {
          title: report.title,
          description: report.description,
@@ -25,7 +25,7 @@ async function runAnalysisJob(reportId: string, depth: "quick" | "deep") {
       Object.assign(analysis, result, { jobStatus: "done" });
       await analysis.save();
 
-      report.status = "analyzed";
+      report.status = "done";
       report.rowCount = dataset.rowCount;
       await report.save();
    } catch (err) {

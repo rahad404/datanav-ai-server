@@ -7,7 +7,7 @@ import { ApiError } from "../middleware/errorHandler";
 export const listPublicReports = asyncHandler(async (req: Request, res: Response) => {
    const { search, category, dateFrom, dateTo, sort = "-createdAt", page = "1", limit = "12" } = req.query;
 
-   const filter: Record<string, unknown> = { isPublic: true, status: "analyzed" };
+   const filter: Record<string, unknown> = { isPublic: true, status: "done" };
    if (category) filter.category = category;
    if (search) filter.$text = { $search: String(search) };
    if (dateFrom || dateTo) {
@@ -72,9 +72,9 @@ export const createReport = asyncHandler(async (req: Request, res: Response) => 
       status: "uploaded",
       file: {
          originalName: req.file.originalname,
-         storedPath: req.file.path,
+         path: req.file.path,
          mimeType: req.file.mimetype,
-         sizeBytes: req.file.size,
+         size: req.file.size,
       },
    });
 
@@ -121,7 +121,7 @@ export const deleteReport = asyncHandler(async (req: Request, res: Response) => 
       throw new ApiError("Not authorized", 403);
    }
    try {
-      fs.unlinkSync(report.file.storedPath);
+      fs.unlinkSync(report.file.path);
    } catch {
       // ignore — file may already be missing
    }
