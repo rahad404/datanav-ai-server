@@ -40,7 +40,7 @@ const reportSchema = new Schema<IReport>(
       owner: { type: String, required: true },
       file: {
          originalName: { type: String, required: true },
-         path: { type: String, required: true },
+         path: { type: String, default: "" },
          mimeType: { type: String, required: true },
          size: { type: Number, required: true },
       },
