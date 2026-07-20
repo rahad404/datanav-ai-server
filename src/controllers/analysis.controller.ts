@@ -1,22 +1,24 @@
 import { Request, Response } from "express";
 import { Report } from "../models/Report.model";
 import { Analysis } from "../models/Analysis.model";
-import { parseDataFile } from "../services/fileParser.service";
+import { RawDataset } from "../models/RawDataset.model";
 import { analyzeDataset } from "../services/ai/dataAnalyzer.service";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { ApiError } from "../middleware/errorHandler";
 
 async function runAnalysisJob(reportId: string, depth: "quick" | "deep") {
-   const report = await Report.findById(reportId);
-   if (!report) return;
+   const [report, rawDataset] = await Promise.all([
+      Report.findById(reportId),
+      RawDataset.findOne({ report: reportId }),
+   ]);
+   if (!report || !rawDataset) return;
 
    const analysis = await Analysis.create({ report: reportId, depth, jobStatus: "processing" });
    report.status = "processing";
    await report.save();
 
    try {
-      const dataset = parseDataFile(report.file.path);
-      const result = await analyzeDataset(dataset, depth, {
+      const result = await analyzeDataset(rawDataset, depth, {
          title: report.title,
          description: report.description,
          category: report.category,
@@ -26,7 +28,7 @@ async function runAnalysisJob(reportId: string, depth: "quick" | "deep") {
       await analysis.save();
 
       report.status = "done";
-      report.rowCount = dataset.rowCount;
+      report.rowCount = rawDataset.rowCount;
       await report.save();
    } catch (err) {
       analysis.jobStatus = "failed";

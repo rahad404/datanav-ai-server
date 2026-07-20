@@ -1,13 +1,6 @@
-import fs from "fs";
-import path from "path";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
-/**
- * Parses an uploaded CSV/XLSX/JSON file into a normalized array of
- * row objects, plus a lightweight schema/summary used to ground the
- * AI prompt in actual column names and value ranges.
- */
 export interface ParsedDataset {
    rows: Record<string, unknown>[];
    columns: string[];
@@ -15,20 +8,20 @@ export interface ParsedDataset {
    numericSummary: Record<string, { min: number; max: number; avg: number }>;
 }
 
-export function parseDataFile(filePath: string): ParsedDataset {
-   const ext = path.extname(filePath).toLowerCase();
+export function parseBuffer(buffer: Buffer, originalName: string): ParsedDataset {
+   const ext = originalName.toLowerCase().split(".").pop() || "";
    let rows: Record<string, unknown>[] = [];
 
-   if (ext === ".csv") {
-      const content = fs.readFileSync(filePath, "utf-8");
+   if (ext === "csv") {
+      const content = buffer.toString("utf-8");
       const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
       rows = parsed.data as Record<string, unknown>[];
-   } else if (ext === ".xlsx" || ext === ".xls") {
-      const workbook = XLSX.readFile(filePath);
+   } else if (ext === "xlsx" || ext === "xls") {
+      const workbook = XLSX.read(buffer, { type: "buffer" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       rows = XLSX.utils.sheet_to_json(sheet);
-   } else if (ext === ".json") {
-      const content = fs.readFileSync(filePath, "utf-8");
+   } else if (ext === "json") {
+      const content = buffer.toString("utf-8");
       const parsed = JSON.parse(content);
       rows = Array.isArray(parsed) ? parsed : parsed.data ?? [];
    } else {

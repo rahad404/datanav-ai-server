@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import fs from "fs";
 import { Report } from "../models/Report.model";
+import { RawDataset } from "../models/RawDataset.model";
+import { parseBuffer } from "../services/fileParser.service";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { ApiError } from "../middleware/errorHandler";
 
@@ -53,7 +54,7 @@ export const getRelatedReports = asyncHandler(async (req: Request, res: Response
       _id: { $ne: report._id },
       category: report.category,
       isPublic: true,
-      status: "analyzed",
+      status: "done",
    }).limit(4);
 
    res.json(related);
@@ -62,6 +63,8 @@ export const getRelatedReports = asyncHandler(async (req: Request, res: Response
 export const createReport = asyncHandler(async (req: Request, res: Response) => {
    const { title, description, category, isPublic } = req.body;
    if (!req.file) throw new ApiError("A data file is required", 400);
+
+   const dataset = parseBuffer(req.file.buffer, req.file.originalname);
 
    const report = await Report.create({
       title,
@@ -72,10 +75,18 @@ export const createReport = asyncHandler(async (req: Request, res: Response) => 
       status: "uploaded",
       file: {
          originalName: req.file.originalname,
-         path: req.file.path,
+         path: "",
          mimeType: req.file.mimetype,
          size: req.file.size,
       },
+   });
+
+   await RawDataset.create({
+      report: report._id.toString(),
+      rows: dataset.rows,
+      columns: dataset.columns,
+      rowCount: dataset.rowCount,
+      numericSummary: dataset.numericSummary,
    });
 
    res.status(201).json(report);
@@ -120,11 +131,9 @@ export const deleteReport = asyncHandler(async (req: Request, res: Response) => 
    if (report.owner.toString() !== req.user!.userId && req.user!.role !== "admin") {
       throw new ApiError("Not authorized", 403);
    }
-   try {
-      fs.unlinkSync(report.file.path);
-   } catch {
-      // ignore — file may already be missing
-   }
-   await report.deleteOne();
+   await Promise.all([
+      report.deleteOne(),
+      RawDataset.deleteOne({ report: req.params.id }),
+   ]);
    res.json({ message: "Report deleted" });
 });
