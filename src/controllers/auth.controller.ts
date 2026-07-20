@@ -2,9 +2,19 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { env } from "../config/env";
+import { connectDB } from "../config/db";
 import { User } from "../models/User.model";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { ApiError } from "../middleware/errorHandler";
+
+async function ensureDb(): Promise<mongoose.mongo.Db> {
+   if (mongoose.connection.readyState === 1 && mongoose.connection.db) {
+      return mongoose.connection.db;
+   }
+   await connectDB();
+   if (!mongoose.connection.db) throw new ApiError("Database not connected", 500);
+   return mongoose.connection.db;
+}
 
 /**
  * POST /api/auth/jwt
@@ -20,8 +30,7 @@ export const bridgeSessionToJwt = asyncHandler(async (req: Request, res: Respons
    const { sessionToken } = req.body as { sessionToken?: string };
    if (!sessionToken) throw new ApiError("sessionToken is required", 400);
 
-   const db = mongoose.connection.db;
-   if (!db) throw new ApiError("Database not connected", 500);
+   const db = await ensureDb();
    const sessionDoc = await db.collection("session").findOne({ token: sessionToken });
 
    if (!sessionDoc || new Date(sessionDoc.expiresAt) < new Date()) {
