@@ -53,8 +53,8 @@ MONGODB_DB_NAME=datanav-ai
 ACCESS_TOKEN_SECRET=<your-secret-here>
 ACCESS_TOKEN_EXPIRES_IN=15m
 
-# Frontend origin for CORS
-CORS_ORIGIN=http://localhost:3000
+# Comma-separated frontend origins for CORS
+CORS_ORIGINS=http://localhost:3000,https://datanav-ai.vercel.app
 
 # LLM provider config (any OpenAI-compatible API works)
 LLM_PROVIDER=gemini
@@ -105,13 +105,15 @@ src/
 ├── middleware/
 │   ├── asyncHandler.ts     # Async error wrapper
 │   ├── errorHandler.ts     # Global error handler + ApiError class
-│   ├── upload.ts           # Multer config (CSV/XLSX/JSON, 10MB limit)
+│   ├── ensureDb.ts         # DB reconnection middleware (serverless cold-start)
+│   ├── upload.ts           # Multer memoryStorage config (CSV/XLSX/JSON, 10MB limit)
 │   └── verifyToken.ts      # JWT verification + optional auth
 ├── models/
 │   ├── User.model.ts       # Mirrors Better Auth user collection
 │   ├── Report.model.ts
 │   ├── Analysis.model.ts
-│   └── ChatMessage.model.ts
+│   ├── ChatMessage.model.ts
+│   └── RawDataset.model.ts # In-memory file parse results (serverless-safe)
 ├── routes/
 │   ├── auth.routes.ts
 │   ├── reports.routes.ts
@@ -188,7 +190,7 @@ Query parameters:
 ```json
 // Response 200
 {
-  "items": [{ "title": "...", "category": "finance", "status": "analyzed", ... }],
+  "items": [{ "title": "...", "category": "finance", "status": "done", ... }],
   "total": 45,
   "page": 1,
   "pages": 4
@@ -320,7 +322,7 @@ This API uses a **session-to-JWT bridge** pattern:
 
 - **Supported formats**: `.csv`, `.xlsx`, `.xls`, `.json`
 - **Max size**: 10 MB
-- **Storage**: Files saved to `uploads/` directory with timestamped filenames
+- **Storage**: Files stored in-memory and saved to MongoDB `RawDataset` collection (serverless-safe — no disk writes)
 - **Parsing**: CSV via PapaParse, Excel via `xlsx`, JSON parsed natively
 
 ---
