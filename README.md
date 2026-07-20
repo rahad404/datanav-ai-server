@@ -330,9 +330,3 @@ This API uses a **session-to-JWT bridge** pattern:
 ## Rate Limiting
 
 Global rate limit on all `/api/*` routes: **300 requests per 15-minute window** per IP.
-
----
-
-## License
-
-ISC
