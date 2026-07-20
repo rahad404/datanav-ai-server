@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { env } from "../config/env";
 import { connectDB } from "../config/db";
-import { User } from "../models/User.model";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { ApiError } from "../middleware/errorHandler";
 
@@ -37,10 +36,10 @@ export const bridgeSessionToJwt = asyncHandler(async (req: Request, res: Respons
       throw new ApiError("Session is invalid or expired", 401);
    }
 
-   const user = await User.findById(sessionDoc.userId.toString());
-   if (!user) throw new ApiError("User not found for session", 401);
+   const userDoc = await db.collection("users").findOne({ _id: sessionDoc.userId });
+   if (!userDoc) throw new ApiError("User not found for session", 401);
 
-   const payload = { userId: user._id.toString(), email: user.email, role: user.role };
+   const payload = { userId: userDoc._id.toString(), email: userDoc.email, role: userDoc.role };
    const expiresIn = env.ACCESS_TOKEN_EXPIRES_IN;
 
    const accessToken = jwt.sign(payload, env.ACCESS_TOKEN_SECRET, { expiresIn } as any);
