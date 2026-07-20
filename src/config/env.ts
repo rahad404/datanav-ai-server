@@ -18,6 +18,7 @@ export const env = {
    ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m",
 
    CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:3000",
+   CORS_ORIGINS: (process.env.CORS_ORIGIN || "http://localhost:3000").split(",").map(s => s.trim()),
 
    LLM_PROVIDER: process.env.LLM_PROVIDER || "openai",
    LLM_API_KEY: process.env.LLM_API_KEY || "",

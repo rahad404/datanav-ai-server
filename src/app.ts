@@ -13,7 +13,7 @@ import chatRoutes from "./routes/chat.routes";
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+app.use(cors({ origin: env.CORS_ORIGINS, credentials: true }));
 app.use(express.json());
 
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 300 });
