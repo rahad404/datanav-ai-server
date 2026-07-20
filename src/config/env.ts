@@ -12,7 +12,7 @@ export const env = {
    NODE_ENV: process.env.NODE_ENV || "development",
 
    MONGODB_URI: required("MONGODB_URI"),
-   MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || "datasense",
+   MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || "datanav-ai",
 
    ACCESS_TOKEN_SECRET: required("ACCESS_TOKEN_SECRET"),
    ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m",
