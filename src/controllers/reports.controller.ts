@@ -82,8 +82,17 @@ export const createReport = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const listMyReports = asyncHandler(async (req: Request, res: Response) => {
-   const reports = await Report.find({ owner: req.user!.userId }).sort("-createdAt");
-   res.json(reports);
+   const { page = "1", limit = "12" } = req.query;
+   const pageNum = Math.max(1, Number(page));
+   const limitNum = Math.max(1, Number(limit));
+   const filter = { owner: req.user!.userId };
+
+   const [items, total] = await Promise.all([
+      Report.find(filter).sort("-createdAt").skip((pageNum - 1) * limitNum).limit(limitNum),
+      Report.countDocuments(filter),
+   ]);
+
+   res.json({ items, total, page: pageNum, pages: Math.ceil(total / limitNum) });
 });
 
 export const updateReport = asyncHandler(async (req: Request, res: Response) => {
