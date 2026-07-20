@@ -24,7 +24,7 @@ const userSchema = new Schema<IUser>(
       image: String,
       role: { type: String, enum: ["user", "admin"], default: "user" },
    },
-   { timestamps: true, _id: false, collection: "user" } // shares Better Auth's "user" collection
+   { timestamps: true, _id: false, collection: "users" } // shares Better Auth's "users" collection (usePlural: true)
 );
 
 export const User = model<IUser>("User", userSchema);

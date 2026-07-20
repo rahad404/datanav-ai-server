@@ -31,7 +31,7 @@ export const bridgeSessionToJwt = asyncHandler(async (req: Request, res: Respons
    if (!sessionToken) throw new ApiError("sessionToken is required", 400);
 
    const db = await ensureDb();
-   const sessionDoc = await db.collection("session").findOne({ token: sessionToken });
+   const sessionDoc = await db.collection("sessions").findOne({ token: sessionToken });
 
    if (!sessionDoc || new Date(sessionDoc.expiresAt) < new Date()) {
       throw new ApiError("Session is invalid or expired", 401);
