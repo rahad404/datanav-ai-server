@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import fs from "fs";
 import { Report } from "../models/Report.model";
 import { asyncHandler } from "../middleware/asyncHandler";
 import { ApiError } from "../middleware/errorHandler";
@@ -109,6 +110,11 @@ export const deleteReport = asyncHandler(async (req: Request, res: Response) => 
    if (!report) throw new ApiError("Report not found", 404);
    if (report.owner.toString() !== req.user!.userId && req.user!.role !== "admin") {
       throw new ApiError("Not authorized", 403);
+   }
+   try {
+      fs.unlinkSync(report.file.storedPath);
+   } catch {
+      // ignore — file may already be missing
    }
    await report.deleteOne();
    res.json({ message: "Report deleted" });

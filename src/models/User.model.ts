@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model } from "mongoose";
 
 /**
  * Mirrors the essential fields Better Auth stores in the frontend's
@@ -6,13 +6,14 @@ import { Schema, model, Document } from "mongoose";
  * this is a read-mostly reference used to attach role/profile info to
  * domain data (reports, chat messages).
  */
-export interface IUser extends Document {
-   _id: string; // matches Better Auth's user id
+export interface IUser {
+   _id: string;
    email: string;
    name?: string;
    image?: string;
    role: "user" | "admin";
    createdAt: Date;
+   updatedAt: Date;
 }
 
 const userSchema = new Schema<IUser>(

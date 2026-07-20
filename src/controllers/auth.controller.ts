@@ -21,6 +21,7 @@ export const bridgeSessionToJwt = asyncHandler(async (req: Request, res: Respons
    if (!sessionToken) throw new ApiError("sessionToken is required", 400);
 
    const db = mongoose.connection.db;
+   if (!db) throw new ApiError("Database not connected", 500);
    const sessionDoc = await db.collection("session").findOne({ token: sessionToken });
 
    if (!sessionDoc || new Date(sessionDoc.expiresAt) < new Date()) {
@@ -33,7 +34,7 @@ export const bridgeSessionToJwt = asyncHandler(async (req: Request, res: Respons
    const payload = { userId: user._id.toString(), email: user.email, role: user.role };
    const expiresIn = env.ACCESS_TOKEN_EXPIRES_IN;
 
-   const accessToken = jwt.sign(payload, env.ACCESS_TOKEN_SECRET, { expiresIn });
+   const accessToken = jwt.sign(payload, env.ACCESS_TOKEN_SECRET, { expiresIn } as any);
 
    // Convert "15m" style string to seconds for the client's cache logic
    const expiresInSeconds = parseExpiry(expiresIn);

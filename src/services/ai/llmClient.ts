@@ -11,11 +11,16 @@ export interface ChatMsg {
    content: string;
 }
 
+interface OpenAICompatResponse {
+   choices: { message: { content: string } }[];
+}
+
 export async function chatComplete(messages: ChatMsg[], opts?: { json?: boolean }): Promise<string> {
    // Example implementation for an OpenAI-compatible endpoint.
    // Groq / Together / Ollama all expose OpenAI-compatible /chat/completions APIs,
    // so only the base URL + model name typically need to change.
-   const res = await fetch("https://api.openai.com/v1/chat/completions", {
+   const baseUrl = env.LLM_BASE_URL || "https://api.openai.com/v1";
+   const res = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
          "Content-Type": "application/json",
@@ -34,6 +39,6 @@ export async function chatComplete(messages: ChatMsg[], opts?: { json?: boolean 
       throw new Error(`LLM request failed: ${res.status} ${errText}`);
    }
 
-   const data = await res.json();
-   return data.choices[0].message.content as string;
+   const data = (await res.json()) as OpenAICompatResponse;
+   return data.choices[0].message.content;
 }

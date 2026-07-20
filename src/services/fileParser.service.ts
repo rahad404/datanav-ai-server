@@ -42,10 +42,10 @@ export function parseDataFile(filePath: string): ParsedDataset {
       const values = rows
          .map((r) => Number(r[col]))
          .filter((v) => !Number.isNaN(v));
-      if (values.length > rows.length * 0.5) {
+      if (values.length > rows.length * 0.3) {
          numericSummary[col] = {
-            min: Math.min(...values),
-            max: Math.max(...values),
+            min: values.reduce((a, b) => (a < b ? a : b)),
+            max: values.reduce((a, b) => (a > b ? a : b)),
             avg: values.reduce((a, b) => a + b, 0) / values.length,
          };
       }

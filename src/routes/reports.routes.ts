@@ -15,8 +15,8 @@ const router = Router();
 
 router.get("/", listPublicReports);
 router.get("/mine", verifyToken, listMyReports);
-router.get("/:id", attachUserIfPresent, getReportById);
 router.get("/:id/related", getRelatedReports);
+router.get("/:id", attachUserIfPresent, getReportById);
 
 router.post("/", verifyToken, upload.single("file"), createReport);
 router.patch("/:id", verifyToken, updateReport);
